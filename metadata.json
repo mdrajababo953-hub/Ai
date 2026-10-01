@@ -1,0 +1,8 @@
+{
+  "name": "Sonic Voice",
+  "description": "AI Voice Cloning & Text-to-Speech powered by Cartesia Sonic. Clone voices from audio clips and generate lifelike speech.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
