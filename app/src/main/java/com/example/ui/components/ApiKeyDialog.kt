@@ -122,11 +122,36 @@ fun ApiKeyDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(NeonEmerald.copy(alpha = 0.15f))
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = NeonEmerald,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "ইন-বিল্ট এআই ইঞ্জিন সক্রিয়! কোনো API Key ছাড়াই অ্যাপ ১০০% কাজ করবে।",
+                        fontSize = 12.sp,
+                        color = NeonEmerald,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
                 Text(
-                    text = "Get your API key from play.cartesia.ai dashboard. Paste it below to enable voice cloning and high-speed Sonic TTS.",
-                    fontSize = 13.sp,
+                    text = "আপনি চাইলে অতিরিক্ত ক্লাউড সার্ভিসের জন্য play.cartesia.ai থেকে API Key দিতে পারেন (ঐচ্ছিক):",
+                    fontSize = 12.sp,
                     color = TextSecondary,
-                    lineHeight = 18.sp
+                    lineHeight = 17.sp
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))

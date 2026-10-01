@@ -601,7 +601,7 @@ fun VoiceCloneWizardScreen(
                                 color = TextPrimary
                             )
                             Text(
-                                text = "কণ্ঠ '${cloned.name}' এখন স্পিচ স্টুডিওতে যুক্ত হয়েছে। আপনি যা লিখবেন তাই এই কণ্ঠে শোনা যাবে!",
+                                text = "কণ্ঠ '${cloned.name}' বিশ্লেষণ সম্পন্ন হয়েছে।\n${cloned.description}\nএখন আপনি যা লিখবেন, ঠিক এই কণ্ঠে শোনা যাবে!",
                                 fontSize = 12.sp,
                                 color = TextSecondary,
                                 modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
@@ -653,7 +653,7 @@ fun VoiceCloneWizardScreen(
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Text(
-                                text = "কার্তেসিয়া দিয়ে ভয়েস ক্লোন করা হচ্ছে...",
+                                text = "এআই অ্যাকোস্টিক বিশ্লেষণ ও ভয়েস মডেল তৈরি হচ্ছে...",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.Black

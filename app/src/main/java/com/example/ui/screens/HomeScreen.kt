@@ -156,14 +156,14 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // API Status Badge
+                    // AI Engine Status Badge
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(20.dp))
-                            .background(if (isKeyConfigured) NeonEmerald.copy(alpha = 0.2f) else NeonAmber.copy(alpha = 0.2f))
+                            .background(NeonEmerald.copy(alpha = 0.2f))
                             .border(
                                 1.dp,
-                                if (isKeyConfigured) NeonEmerald.copy(alpha = 0.5f) else NeonAmber.copy(alpha = 0.5f),
+                                NeonEmerald.copy(alpha = 0.5f),
                                 RoundedCornerShape(20.dp)
                             )
                             .clickable { viewModel.setShowApiKeyDialog(true) }
@@ -177,12 +177,12 @@ fun HomeScreen(
                                 modifier = Modifier
                                     .size(7.dp)
                                     .clip(CircleShape)
-                                    .background(if (isKeyConfigured) NeonEmerald else NeonAmber)
+                                    .background(NeonEmerald)
                             )
                             Text(
-                                text = if (isKeyConfigured) "Connected" else "Set Key",
+                                text = "এআই সক্রিয় (Active)",
                                 fontSize = 11.sp,
-                                color = if (isKeyConfigured) NeonEmerald else NeonAmber,
+                                color = NeonEmerald,
                                 fontWeight = FontWeight.SemiBold
                             )
                         }

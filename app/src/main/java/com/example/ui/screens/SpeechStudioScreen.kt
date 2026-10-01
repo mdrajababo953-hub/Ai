@@ -449,7 +449,7 @@ fun SpeechStudioScreen(
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = "কার্তেসিয়া দিয়ে কণ্ঠ তৈরি হচ্ছে...",
+                            text = "এআই দিয়ে জীবন্ত কণ্ঠ তৈরি হচ্ছে...",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White

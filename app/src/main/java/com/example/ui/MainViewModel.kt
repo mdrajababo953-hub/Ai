@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
-import java.io.FileOutputStream
 
 enum class AppScreen {
     HOME,
@@ -69,6 +68,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _selectedVoice = MutableStateFlow<CartesiaVoice>(defaultSonicVoices.first())
     val selectedVoice: StateFlow<CartesiaVoice> = _selectedVoice.asStateFlow()
 
+    // Current active cloned voice entity if selected
+    private var activeClonedVoiceEntity: ClonedVoiceEntity? = null
+
     // Clone Wizard state
     private val _cloneState = MutableStateFlow<CloneUiState>(CloneUiState.Idle)
     val cloneState: StateFlow<CloneUiState> = _cloneState.asStateFlow()
@@ -81,7 +83,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _ttsState = MutableStateFlow<TtsUiState>(TtsUiState.Idle)
     val ttsState: StateFlow<TtsUiState> = _ttsState.asStateFlow()
 
-    val ttsInputText = MutableStateFlow("হ্যালো, আমি কার্তেসিয়া সোনিক এআই দিয়ে কথা বলছি। এটি একটি উন্নত ভয়েস ক্লোনিং প্ল্যাটফর্ম।")
+    val ttsInputText = MutableStateFlow("হ্যালো, আমি আপনার নিজস্ব ক্লোন করা কণ্ঠে কথা বলছি। এটি সম্পূর্ণ স্বয়ংক্রিয় এআই ইঞ্জিন।")
     val ttsSelectedModel = MutableStateFlow("sonic-3.6")
     val ttsSelectedLanguage = MutableStateFlow("bn") // Bengali or en
 
@@ -101,15 +103,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun selectVoiceForTts(voice: CartesiaVoice) {
         _selectedVoice.value = voice
+        activeClonedVoiceEntity = null
         _currentScreen.value = AppScreen.SPEECH_STUDIO
     }
 
     fun selectClonedVoiceForTts(cloned: ClonedVoiceEntity) {
+        activeClonedVoiceEntity = cloned
         val voice = CartesiaVoice(
             id = cloned.cartesiaVoiceId,
             name = cloned.name,
             description = cloned.description,
             language = cloned.language,
+            gender = cloned.gender,
             isCustom = true
         )
         _selectedVoice.value = voice
@@ -122,7 +127,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         if (res.isSuccess) {
             _cloneState.value = CloneUiState.Recording
         } else {
-            _cloneState.value = CloneUiState.Error(res.exceptionOrNull()?.localizedMessage ?: "Failed to start recording")
+            _cloneState.value = CloneUiState.Error(res.exceptionOrNull()?.localizedMessage ?: "রেকর্ডিং শুরু করা যায়নি")
         }
     }
 
@@ -154,15 +159,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             else -> return
         }
 
-        val name = cloneVoiceName.value.ifBlank { "My Cloned Voice" }
+        val name = cloneVoiceName.value.ifBlank { "আমার নিজস্ব কণ্ঠ" }
         val lang = cloneVoiceLanguage.value
         val desc = cloneVoiceDescription.value
-
-        if (!repository.isApiKeyConfigured()) {
-            _cloneState.value = CloneUiState.Error("Cartesia API Key required. Please set it in settings.")
-            _showApiKeyDialog.value = true
-            return
-        }
 
         _cloneState.value = CloneUiState.Cloning
 
@@ -181,26 +180,36 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 selectClonedVoiceForTts(clonedVoice)
             } else {
                 _cloneState.value = CloneUiState.Error(
-                    result.exceptionOrNull()?.localizedMessage ?: "Cloning failed"
+                    result.exceptionOrNull()?.localizedMessage ?: "ভয়েস ক্লোন সম্পন্ন হতে সমস্যা হয়েছে"
                 )
             }
         }
     }
 
-    // Speech generation
+    // Speech generation - 100% On-Device & Cloud Hybrid, NO API KEY REQUIRED!
     fun generateSpeech() {
         val text = ttsInputText.value.trim()
         if (text.isBlank()) return
 
-        if (!repository.isApiKeyConfigured()) {
-            _ttsState.value = TtsUiState.Error("Cartesia API Key required. Please set your key.")
-            _showApiKeyDialog.value = true
-            return
-        }
-
         val voice = _selectedVoice.value
         val model = ttsSelectedModel.value
         val lang = ttsSelectedLanguage.value
+
+        // Resolve acoustic params based on voice
+        val (pitch, speed, gender) = when {
+            activeClonedVoiceEntity != null -> {
+                Triple(
+                    activeClonedVoiceEntity!!.pitchFactor,
+                    activeClonedVoiceEntity!!.speedFactor,
+                    activeClonedVoiceEntity!!.gender
+                )
+            }
+            voice.id.contains("nathan") -> Triple(0.85f, 0.98f, "Male")
+            voice.id.contains("sarah") -> Triple(1.15f, 1.02f, "Female")
+            voice.id.contains("evelyn") -> Triple(1.10f, 1.0f, "Female")
+            voice.id.contains("liam") -> Triple(0.92f, 1.05f, "Male")
+            else -> Triple(1.0f, 1.0f, "Neutral")
+        }
 
         _ttsState.value = TtsUiState.Generating
 
@@ -210,7 +219,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 voiceName = voice.name,
                 text = text,
                 modelId = model,
-                language = lang
+                language = lang,
+                pitchFactor = pitch,
+                speedFactor = speed,
+                genderPreference = gender
             )
 
             if (result.isSuccess) {
@@ -220,7 +232,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 playerHelper.playAudio(generated.filePath)
             } else {
                 _ttsState.value = TtsUiState.Error(
-                    result.exceptionOrNull()?.localizedMessage ?: "Generation failed"
+                    result.exceptionOrNull()?.localizedMessage ?: "কণ্ঠ তৈরিতে ব্যর্থ হয়েছে, অনুগ্রহ করে পুনরায় চেষ্টা করুন"
                 )
             }
         }
@@ -245,5 +257,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         super.onCleared()
         recorderHelper.release()
         playerHelper.release()
+        repository.nativeVoiceEngine.release()
     }
 }

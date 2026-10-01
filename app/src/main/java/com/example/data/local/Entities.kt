@@ -12,6 +12,10 @@ data class ClonedVoiceEntity(
     val language: String = "bn",
     val description: String = "",
     val sampleAudioPath: String? = null,
+    val pitchFactor: Float = 1.0f,
+    val speedFactor: Float = 1.0f,
+    val gender: String = "Neutral",
+    val toneStyle: String = "",
     val createdAt: Long = System.currentTimeMillis()
 )
 
